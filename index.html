@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALGASS — Chez Almadane Gassamba</title>
+
+<!-- Firebase (base de données en ligne) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnpLiycHx_JGMCCATTLmu6fXgyxzIZVM8",
+    authDomain: "restaurant-algass.firebaseapp.com",
+    projectId: "restaurant-algass",
+    storageBucket: "restaurant-algass.firebasestorage.app",
+    messagingSenderId: "439861225732",
+    appId: "1:439861225732:web:e7f573270bec58b0adc851"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<style>
+  :root{
+    --creme:#F6EEE0;
+    --creme-clair:#FBF6EC;
+    --brique:#7A2E1F;
+    --brique-fonce:#4E1B12;
+    --epice:#C6551E;
+    --epice-clair:#E07A34;
+    --or:#D9A441;
+    --olive:#54613A;
+    --encre:#2B1B12;
+    --ligne:rgba(43,27,18,0.12);
+    --font-display:'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+    --font-body:'Jost', 'Avenir Next', 'Segoe UI', sans-serif;
+    --font-mono:'Space Mono', monospace;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Jost:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background-color:var(--creme-clair);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(198,85,30,0.05) 0%, transparent 45%),
+      radial-gradient(circle at 88% 30%, rgba(122,46,31,0.05) 0%, transparent 40%),
+      radial-gradient(circle at 30% 92%, rgba(217,164,65,0.06) 0%, transparent 45%);
+    color:var(--encre);font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;}
+
+  /* ================= TOP BAR ================= */
+  .topbar{
+    background:var(--brique-fonce);color:var(--creme-clair);font-family:var(--font-mono);
+    font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;padding:8px 20px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
+  }
+  .topbar span{opacity:0.9;}
+
+  /* ================= HEADER ================= */
+  header{background:var(--creme-clair);border-bottom:1px solid var(--ligne);position:sticky;top:0;z-index:100;}
+  .header-inner{max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .logo{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+  .logo-mark{width:46px;height:46px;border:2px solid var(--brique);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.25rem;color:var(--brique);flex-shrink:0;font-weight:600;overflow:hidden;position:relative;background:var(--creme-clair);}
+  .logo-mark img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+  .logo-text{font-family:var(--font-display);font-size:1.3rem;font-weight:600;color:var(--brique-fonce);line-height:1.1;letter-spacing:0.01em;}
+  .logo-text small{display:block;font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.13em;text-transform:uppercase;color:var(--epice);margin-top:3px;font-weight:400;}
+  nav{display:flex;gap:28px;font-size:0.9rem;font-weight:500;}
+  nav a{position:relative;padding:4px 0;color:var(--encre);}
+  nav a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--epice);transition:width .25s ease;}
+  nav a:hover::after{width:100%;}
+  .cta-whatsapp{background:var(--brique);color:var(--creme-clair);padding:10px 18px;border-radius:2px;font-size:0.82rem;font-weight:600;}
+  .header-admin-actions{display:none;gap:10px;}
+  .header-admin-actions.visible{display:flex;}
+  .admin-btn{background:var(--epice);color:#fff;border:none;padding:10px 16px;border-radius:2px;font-size:0.82rem;font-weight:600;cursor:pointer;}
+  .logout-btn{background:transparent;border:1px solid var(--ligne);padding:10px 16px;border-radius:2px;font-size:0.82rem;cursor:pointer;}
+  .burger{display:none;font-size:1.6rem;background:none;border:none;color:var(--brique-fonce);cursor:pointer;line-height:1;}
+  .mobile-nav{display:none;flex-direction:column;background:var(--creme-clair);border-top:1px solid var(--ligne);overflow:hidden;max-height:0;transition:max-height .3s ease;}
+  .mobile-nav.open{max-height:400px;}
+  .mobile-nav a{padding:16px 24px;font-size:0.95rem;font-weight:500;color:var(--encre);border-bottom:1px solid var(--ligne);}
+  .mobile-nav .mobile-nav-cta{background:var(--brique);color:var(--creme-clair);text-align:center;font-weight:600;border-bottom:none;margin:12px 24px 16px;border-radius:2px;padding:14px;}
+
+  /* ================= HERO ================= */
+  .hero{position:relative;background:var(--brique-fonce);color:var(--creme-clair);overflow:hidden;min-height:78vh;display:flex;flex-direction:column;align-items:center;}
+  .hero::before{content:'';position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80');background-size:cover;background-position:center 65%;opacity:0.55;}
+  .hero::after{content:'';position:absolute;inset:0;background:linear-gradient(125deg, rgba(78,27,18,0.95) 10%, rgba(78,27,18,0.72) 45%, rgba(198,85,30,0.38) 100%);}
+  .hero-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:70px 24px 40px;width:100%;}
+  .hero-eyebrow{font-family:var(--font-mono);font-size:0.78rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--or);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+  .hero-eyebrow::before{content:'';width:32px;height:1px;background:var(--or);}
+  .hero h1{font-family:var(--font-display);font-weight:600;font-size:clamp(2.2rem,5.5vw,4rem);line-height:1.08;max-width:800px;margin-bottom:22px;}
+  .hero h1 em{font-style:normal;color:var(--epice-clair);}
+  .hero p{max-width:500px;font-size:1.02rem;font-weight:300;color:rgba(246,238,224,0.88);margin-bottom:32px;}
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;}
+  .btn-primary{background:var(--epice);color:var(--creme-clair);padding:15px 28px;font-weight:600;font-size:0.92rem;border-radius:2px;display:inline-flex;align-items:center;gap:10px;transition:transform .2s ease, background .2s ease;}
+  .btn-primary:hover{background:var(--epice-clair);transform:translateY(-2px);}
+  .btn-secondary{border:1px solid rgba(246,238,224,0.4);color:var(--creme-clair);padding:15px 28px;font-size:0.92rem;border-radius:2px;transition:border-color .2s ease, background .2s ease;}
+  .btn-secondary:hover{border-color:var(--or);background:rgba(255,255,255,0.05);}
+  .hero-stats{position:relative;z-index:2;max-width:1200px;width:100%;margin:0 auto;padding:0 24px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(246,238,224,0.15);}
+  .stat{background:var(--brique-fonce);padding:20px 18px;}
+  .stat b{display:block;font-family:var(--font-display);font-weight:600;font-size:1.7rem;color:var(--or);}
+  .stat span{font-size:0.74rem;color:rgba(246,238,224,0.68);text-transform:uppercase;letter-spacing:0.05em;}
+
+  /* ================= SECTIONS ================= */
+  .section{max-width:1200px;margin:0 auto;padding:80px 24px;}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:18px;border-bottom:1px solid var(--ligne);padding-bottom:22px;}
+  .section-eyebrow{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--epice);margin-bottom:8px;}
+  .section-head h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.7rem,3.2vw,2.4rem);color:var(--brique-fonce);}
+  .section-sub{max-width:360px;font-size:0.9rem;color:#6b5a4a;}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px;}
+  .filter-chip{font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;padding:8px 16px;border:1px solid var(--ligne);border-radius:20px;background:transparent;cursor:pointer;color:var(--encre);transition:all .2s ease;}
+  .filter-chip.active,.filter-chip:hover{background:var(--brique);color:var(--creme-clair);border-color:var(--brique);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:26px;}
+  .empty-msg{padding:40px 0;color:#8a7864;font-style:italic;}
+  .card{background:var(--creme-clair);border:1px solid var(--ligne);border-radius:3px;overflow:hidden;cursor:pointer;transition:transform .25s ease,box-shadow .25s ease;display:flex;flex-direction:column;}
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 34px -14px rgba(43,27,18,0.28);}
+  .card-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--creme);cursor:default;}
+  .card-media img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;cursor:zoom-in;}
+  .card:hover .card-media img{transform:scale(1.08);}
+  .card-admin-actions{position:absolute;top:10px;right:10px;z-index:5;display:flex;gap:6px;}
+  .mini-btn{width:30px;height:30px;border-radius:50%;border:none;background:var(--brique);color:#fff;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;}
+  .mini-btn.danger{background:var(--epice);}
+  .badge{position:absolute;top:12px;left:12px;background:var(--epice);color:var(--creme-clair);font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;padding:5px 10px;border-radius:2px;z-index:3;}
+  .zoom-hint-icon{position:absolute;bottom:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(78,27,18,0.68);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;z-index:4;pointer-events:none;}
+  .card-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .card-cat{font-family:var(--font-mono);font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--epice);}
+  .card-title{font-family:var(--font-display);font-weight:600;font-size:1.1rem;color:var(--brique-fonce);line-height:1.25;}
+  .card-desc{font-size:0.82rem;color:#6b5a4a;flex:1;}
+  .card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:10px;border-top:1px dashed var(--ligne);}
+  .card-price{font-family:var(--font-display);font-weight:600;font-size:1.12rem;color:var(--epice);}
+  .card-price span{font-family:var(--font-mono);font-size:0.62rem;color:#8a7864;display:block;font-weight:400;}
+  .card-link{font-size:0.76rem;font-weight:600;color:var(--brique);display:flex;align-items:center;gap:5px;}
+  .card-link svg{width:14px;height:14px;transition:transform .2s ease;}
+  .card:hover .card-link svg{transform:translateX(3px);}
+
+  /* ================= TRUST ================= */
+  .trust{
+    background-color:var(--brique);
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(255,255,255,0.06) 0%, transparent 35%),
+      radial-gradient(circle at 90% 80%, rgba(0,0,0,0.12) 0%, transparent 45%);
+    color:var(--creme-clair);
+  }
+  .trust-inner{max-width:1200px;margin:0 auto;padding:56px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:36px;}
+  .trust-item{display:flex;gap:14px;align-items:flex-start;}
+  .trust-num{font-family:var(--font-display);font-weight:600;font-size:1.5rem;color:var(--or);flex-shrink:0;}
+  .trust-item h3{font-size:0.98rem;margin-bottom:6px;font-weight:600;}
+  .trust-item p{font-size:0.84rem;color:rgba(246,238,224,0.78);}
+
+  /* ================= ABOUT ================= */
+  .about{background:var(--creme);}
+  .about-inner{max-width:1200px;margin:0 auto;padding:80px 24px;display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;}
+  .about-media{position:relative;}
+  .about-media img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:3px;}
+  .about-media::before{content:'';position:absolute;top:-18px;left:-18px;width:100%;height:100%;border:2px solid var(--epice);z-index:-1;border-radius:3px;}
+  .about-text h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.7rem,3vw,2.2rem);color:var(--brique-fonce);margin-bottom:18px;line-height:1.15;}
+  .about-text p{color:#5a4938;margin-bottom:14px;font-size:0.95rem;}
+  .about-address{display:flex;gap:12px;align-items:flex-start;margin-top:18px;padding:14px 16px;background:var(--creme-clair);border:1px solid var(--ligne);border-radius:3px;font-size:0.88rem;color:#5a4938;line-height:1.5;}
+  .about-address-icon{font-size:1.1rem;flex-shrink:0;}
+  .about-signature{margin-top:22px;font-family:var(--font-display);font-weight:600;font-size:1.05rem;color:var(--epice);}
+
+  /* ================= CONTACT CTA ================= */
+  .contact-cta{background:var(--brique-fonce);color:var(--creme-clair);text-align:center;padding:90px 24px;position:relative;overflow:hidden;}
+  .contact-cta::before{content:'';position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;opacity:0.28;}
+  .contact-cta-inner{position:relative;z-index:2;max-width:600px;margin:0 auto;}
+  .contact-cta .section-eyebrow{justify-content:center;display:flex;}
+  .contact-cta h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.8rem,3.6vw,2.5rem);margin-bottom:16px;}
+  .contact-cta p{color:rgba(246,238,224,0.78);margin-bottom:30px;font-size:1rem;}
+  .whatsapp-big{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;padding:16px 32px;border-radius:3px;font-weight:600;font-size:1rem;transition:transform .2s ease,box-shadow .2s ease;}
+  .whatsapp-big:hover{transform:translateY(-3px);box-shadow:0 14px 30px -10px rgba(37,211,102,0.5);}
+
+  /* ================= FOOTER ================= */
+  footer{background:var(--encre);color:rgba(246,238,224,0.62);padding:46px 24px 22px;}
+  .footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:36px;margin-bottom:36px;}
+  .footer-brand .logo-text{color:var(--creme-clair);}
+  .footer-brand p{margin-top:12px;font-size:0.82rem;max-width:300px;line-height:1.6;}
+  .footer-col h4{font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--or);margin-bottom:14px;}
+  .footer-col a,.footer-col span{display:block;font-size:0.82rem;padding:5px 0;color:rgba(246,238,224,0.65);}
+  .footer-bottom{max-width:1200px;margin:0 auto;padding-top:20px;border-top:1px solid rgba(246,238,224,0.1);font-size:0.72rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--font-mono);}
+
+  /* ================= WHATSAPP FLOAT ================= */
+  .wa-float{position:fixed;bottom:22px;right:22px;background:#25D366;color:#fff;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px -8px rgba(37,211,102,0.6);z-index:200;font-size:1.4rem;animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,0.5);}70%{box-shadow:0 0 0 14px rgba(37,211,102,0);}100%{box-shadow:0 0 0 0 rgba(37,211,102,0);}}
+
+  /* ================= MODALS ================= */
+  .modal-overlay{position:fixed;inset:0;background:rgba(43,27,18,0.55);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .login-box{background:var(--creme-clair);padding:30px;border-radius:4px;width:100%;max-width:340px;box-shadow:0 30px 60px -20px rgba(0,0,0,0.4);}
+  .modal-title{font-family:var(--font-display);font-weight:600;font-size:1.3rem;color:var(--brique-fonce);margin-bottom:6px;}
+  .modal-sub{font-size:0.82rem;color:#8a7864;margin-bottom:18px;}
+  .modal-input,.modal-select,.modal-textarea{width:100%;padding:11px 14px;border:1px solid var(--ligne);border-radius:2px;font-size:0.9rem;font-family:var(--font-body);margin-bottom:8px;}
+  .modal-textarea{min-height:70px;resize:vertical;}
+  .modal-error{color:var(--epice);font-size:0.8rem;margin-top:4px;margin-bottom:8px;}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .btn-submit{flex:1;background:var(--brique);color:#fff;border:none;padding:12px 18px;border-radius:2px;font-weight:600;cursor:pointer;font-size:0.88rem;}
+  .btn-cancel{flex:1;background:transparent;border:1px solid var(--ligne);padding:12px 18px;border-radius:2px;cursor:pointer;font-size:0.88rem;}
+
+  .admin-panel{background:var(--creme-clair);border-radius:4px;width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 30px 60px -20px rgba(0,0,0,0.4);}
+  .admin-panel-header{display:flex;justify-content:space-between;align-items:center;padding:24px 26px 10px;}
+  .close-x{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--encre);}
+  .add-btn{margin:0 26px 16px;background:var(--epice);color:#fff;border:none;padding:12px 18px;border-radius:2px;font-weight:600;cursor:pointer;font-size:0.88rem;}
+  .logo-manage-box{margin:0 26px 20px;display:flex;gap:14px;align-items:center;border:1px solid var(--ligne);border-radius:3px;padding:14px;background:var(--creme);}
+  .logo-admin-preview{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid var(--ligne);background:var(--creme-clair);flex-shrink:0;}
+  .logo-manage-title{font-size:0.85rem;font-weight:600;color:var(--brique-fonce);}
+  .admin-list{overflow-y:auto;padding:0 26px 26px;display:flex;flex-direction:column;gap:10px;}
+  .admin-row{display:flex;align-items:center;gap:12px;border:1px solid var(--ligne);border-radius:3px;padding:10px;}
+  .admin-thumb{width:50px;height:50px;object-fit:cover;border-radius:2px;flex-shrink:0;}
+  .admin-row-info{flex:1;}
+  .admin-row-title{font-weight:600;font-size:0.92rem;}
+  .admin-row-meta{font-size:0.78rem;color:#8a7864;}
+  .row-btn{border:1px solid var(--ligne);background:transparent;padding:7px 12px;border-radius:2px;font-size:0.76rem;cursor:pointer;}
+  .row-btn.danger{border-color:var(--epice);color:var(--epice);}
+
+  .form-box{background:var(--creme-clair);padding:30px;border-radius:4px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:0 30px 60px -20px rgba(0,0,0,0.4);}
+  .form-label{display:block;font-size:0.78rem;font-weight:600;color:var(--brique-fonce);margin-top:14px;margin-bottom:6px;}
+  .type-toggle{display:flex;gap:8px;}
+  .type-toggle-btn{flex:1;padding:12px 10px;border:1.5px solid var(--ligne);border-radius:3px;background:var(--creme-clair);color:var(--encre);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .18s ease;}
+  .type-toggle-btn.active{border-color:var(--epice);background:var(--epice);color:#fff;}
+  .type-pill{display:inline-block;font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:10px;background:var(--olive);color:#fff;margin-left:8px;}
+  .form-hint{font-size:0.76rem;color:#8a7864;margin-top:8px;font-style:italic;}
+  .upload-box{display:flex;gap:14px;align-items:flex-start;}
+  .upload-preview-wrap{position:relative;flex-shrink:0;}
+  .upload-preview{width:84px;height:84px;object-fit:cover;border-radius:3px;border:1px solid var(--ligne);background:var(--creme);}
+  .remove-photo-btn{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;background:var(--epice);color:#fff;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .upload-btn{display:inline-block;background:var(--brique);color:#fff;padding:10px 16px;border-radius:2px;font-size:0.82rem;font-weight:600;cursor:pointer;}
+  .upload-btn input{display:none;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brique-fonce);color:var(--creme-clair);padding:12px 24px;border-radius:3px;font-size:0.85rem;z-index:600;box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .toast.show{opacity:1;}
+
+  /* ================= LIGHTBOX (zoom photo) ================= */
+  .lightbox-overlay{position:fixed;inset:0;background:rgba(20,12,8,0.94);display:none;align-items:center;justify-content:center;z-index:800;touch-action:none;}
+  .lightbox-overlay.open{display:flex;}
+  .lightbox-close{position:absolute;top:18px;right:22px;background:rgba(246,238,224,0.12);border:1px solid rgba(246,238,224,0.3);color:var(--creme-clair);width:42px;height:42px;border-radius:50%;font-size:1.2rem;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;}
+  .lightbox-hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(246,238,224,0.6);font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;z-index:2;text-align:center;}
+  .lightbox-viewport{width:100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:zoom-in;}
+  .lightbox-viewport.zoomed{cursor:grab;}
+  .lightbox-viewport.zoomed.dragging{cursor:grabbing;}
+  .lightbox-img{max-width:92vw;max-height:88vh;object-fit:contain;user-select:none;-webkit-user-drag:none;transition:transform .15s ease;touch-action:none;}
+  .zoom-badge-btn{position:absolute;top:18px;left:22px;background:rgba(246,238,224,0.12);border:1px solid rgba(246,238,224,0.3);color:var(--creme-clair);padding:0 14px;height:42px;border-radius:21px;font-size:0.8rem;cursor:pointer;z-index:2;display:flex;align-items:center;gap:6px;}
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:860px){
+    nav{display:none;}
+    .burger{display:block;}
+    .mobile-nav{display:flex;}
+    .hero-stats{grid-template-columns:repeat(2,1fr);}
+    .about-inner{grid-template-columns:1fr;}
+    .about-media{order:2;}
+    .trust-inner{grid-template-columns:1fr;gap:30px;}
+    .footer-inner{grid-template-columns:1fr;gap:30px;}
+  }
+  @media (max-width:480px){
+    .hero-content{padding:60px 20px;}
+    .section{padding:60px 20px;}
+    .header-inner{padding:14px 18px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+  :focus-visible{outline:2px solid var(--epice);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span>📍 Tombouctou-Djingareiber, entre l'hôtel La Colombe et le Lycée LMAHT</span>
+  <span>Commande à emporter &amp; livraison possible</span>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo" id="logoBtn">
+      <div class="logo-mark" id="logoMark">
+        <span id="logoMarkLetter">A</span>
+        <img id="logoMarkImg" src="" alt="Logo ALGASS" style="display:none;">
+      </div>
+      <div class="logo-text">ALGASS<small>Chez Almadane Gassamba</small></div>
+    </div>
+    <nav id="mainNav">
+      <a href="#menu-du-jour">Menu du jour</a>
+      <a href="#menu">Menu</a>
+      <a href="#apropos">Le restaurant</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="cta-whatsapp" id="ctaWhatsapp" href="https://wa.me/22375557088" target="_blank" rel="noopener">💬 Commander sur WhatsApp</a>
+    <div class="header-admin-actions" id="headerAdminActions">
+      <button class="admin-btn" id="manageBtn">⚙ Gérer le menu</button>
+      <button class="logout-btn" id="logoutBtn">Quitter</button>
+    </div>
+    <button class="burger" id="burgerBtn" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#menu-du-jour">Menu du jour</a>
+    <a href="#menu">Menu</a>
+    <a href="#apropos">Le restaurant</a>
+    <a href="#contact">Contact</a>
+    <a class="mobile-nav-cta" href="https://wa.me/22375557088" target="_blank" rel="noopener">💬 Commander sur WhatsApp</a>
+  </div>
+</header>
+
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Restaurant — ALGASS</div>
+    <h1>Une table chaleureuse, <em>des saveurs qui rassemblent.</em></h1>
+    <p>Chez Almadane Gassamba, chaque plat est préparé avec soin pour vous offrir un vrai moment de plaisir, que vous soyez sur place, à emporter ou en livraison.</p>
+    <div class="hero-actions">
+      <a href="#menu" class="btn-primary">Voir le menu ↓</a>
+      <a href="https://wa.me/22375557088" target="_blank" rel="noopener" class="btn-secondary">Réserver / Commander</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><b id="statCount">15</b><span>Plats &amp; boissons</span></div>
+    <div class="stat"><b>100%</b><span>Fait maison</span></div>
+    <div class="stat"><b>24h</b><span>Réponse WhatsApp</span></div>
+    <div class="stat"><b>4.8★</b><span>Clients satisfaits</span></div>
+  </div>
+</section>
+
+<section class="section" id="menu-du-jour">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">Aujourd'hui seulement</div>
+      <h2>Menu du jour</h2>
+    </div>
+    <p class="section-sub">Les plats disponibles aujourd'hui. Cliquez sur un plat pour commander directement sur WhatsApp.</p>
+  </div>
+  <div class="filters" id="filtersJour">
+    <button class="filter-chip active" data-cat="Tout voir">Tout voir</button>
+    <button class="filter-chip" data-cat="Entrées">Entrées</button>
+    <button class="filter-chip" data-cat="Plats">Plats</button>
+    <button class="filter-chip" data-cat="Boissons">Boissons</button>
+    <button class="filter-chip" data-cat="Desserts">Desserts</button>
+  </div>
+  <div class="grid" id="productGridJour"></div>
+</section>
+
+<section class="section" id="menu">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">Notre menu</div>
+      <h2>Ce que la maison vous propose</h2>
+    </div>
+    <p class="section-sub">Cliquez sur un plat pour être mis en relation directement avec le restaurant sur WhatsApp et passer commande.</p>
+  </div>
+  <div class="filters" id="filters">
+    <button class="filter-chip active" data-cat="Tout voir">Tout voir</button>
+    <button class="filter-chip" data-cat="Entrées">Entrées</button>
+    <button class="filter-chip" data-cat="Plats">Plats</button>
+    <button class="filter-chip" data-cat="Boissons">Boissons</button>
+    <button class="filter-chip" data-cat="Desserts">Desserts</button>
+  </div>
+  <div class="grid" id="productGrid"></div>
+</section>
+
+<section class="trust">
+  <div class="trust-inner">
+    <div class="trust-item"><div class="trust-num">01</div><div><h3>Ingrédients frais</h3><p>Nous sélectionnons nos produits chaque jour pour garantir fraîcheur et qualité.</p></div></div>
+    <div class="trust-item"><div class="trust-num">02</div><div><h3>Commande rapide</h3><p>Passez commande en un message WhatsApp, sans attente ni complications.</p></div></div>
+    <div class="trust-item"><div class="trust-num">03</div><div><h3>Sur place ou à emporter</h3><p>Profitez de notre salle ou récupérez votre commande à emporter selon vos envies.</p></div></div>
+  </div>
+</section>
+
+<section class="about" id="apropos">
+  <div class="about-inner">
+    <div class="about-media">
+      <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80" alt="Intérieur chaleureux du restaurant ALGASS" loading="lazy">
+    </div>
+    <div class="about-text">
+      <div class="section-eyebrow">Notre histoire</div>
+      <h2>Un restaurant porté par la passion de bien nourrir</h2>
+      <p>ALGASS est né de l'envie d'Almadane Gassamba de proposer une cuisine généreuse et soignée, accessible à tous, dans une ambiance conviviale.</p>
+      <p>Chaque recette est pensée pour surprendre agréablement nos clients, qu'ils viennent seuls, en famille ou entre amis.</p>
+      <div class="about-address">
+        <span class="about-address-icon">📍</span>
+        <div>
+          <strong>Tombouctou-Djingareiber</strong><br>
+          Entre l'hôtel La Colombe et le Lycée LMAHT
+        </div>
+      </div>
+      <div class="about-signature">— Almadane Gassamba</div>
+    </div>
+  </div>
+</section>
+
+<section class="contact-cta" id="contact">
+  <div class="contact-cta-inner">
+    <div class="section-eyebrow">Une envie précise ?</div>
+    <h2>Passons commande ensemble.</h2>
+    <p>Le moyen le plus rapide de réserver une table, commander un plat ou poser une question : WhatsApp.</p>
+    <a class="whatsapp-big" href="https://wa.me/22375557088" target="_blank" rel="noopener">💬 Écrire au +223 75 55 70 88</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo-text">ALGASS<br><small style="color:var(--or);">Chez Almadane Gassamba</small></div>
+      <p>Restaurant proposant une cuisine généreuse et faite maison, à savourer sur place, à emporter ou en livraison.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <a href="#menu">Menu</a>
+      <a href="#apropos">Le restaurant</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="https://wa.me/22375557088" target="_blank" rel="noopener">WhatsApp : +223 75 55 70 88</a>
+      <span>Tombouctou-Djingareiber</span>
+      <span>Entre l'hôtel La Colombe et le Lycée LMAHT</span>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 ALGASS — Chez Almadane Gassamba</span>
+    <span>Site de démonstration</span>
+  </div>
+</footer>
+
+<a href="https://wa.me/22375557088" target="_blank" rel="noopener" class="wa-float" aria-label="Contacter sur WhatsApp">💬</a>
+
+<!-- MODAL LOGIN / CREATION MOT DE PASSE -->
+<div class="modal-overlay" id="loginOverlay">
+  <form class="login-box" id="loginForm">
+    <h3 class="modal-title" id="loginTitle">Accès administrateur</h3>
+    <p class="modal-sub" id="loginSub">Entrez le mot de passe pour gérer le menu.</p>
+    <input type="password" class="modal-input" id="pwInput" placeholder="Mot de passe" autocomplete="off">
+    <input type="password" class="modal-input" id="pwConfirm" placeholder="Confirmer le mot de passe" autocomplete="off" style="display:none;">
+    <div class="modal-error" id="loginError" style="display:none;"></div>
+    <div class="modal-actions">
+      <button type="submit" class="btn-submit" id="loginSubmitBtn">Se connecter</button>
+      <button type="button" class="btn-cancel" id="loginCancelBtn">Annuler</button>
+    </div>
+  </form>
+</div>
+
+<!-- MODAL PANNEAU ADMIN -->
+<div class="modal-overlay" id="adminOverlay">
+  <div class="admin-panel">
+    <div class="admin-panel-header">
+      <h3 class="modal-title">Gestion du menu</h3>
+      <button class="close-x" id="adminCloseBtn">✕</button>
+    </div>
+
+    <div class="logo-manage-box">
+      <img id="logoAdminPreview" class="logo-admin-preview" src="" alt="Aperçu du logo">
+      <div style="flex:1;">
+        <div class="logo-manage-title">Logo du restaurant</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <label class="upload-btn" style="font-size:0.76rem;padding:8px 14px;">
+            Changer le logo
+            <input type="file" id="logoPhotoInput" accept="image/*">
+          </label>
+          <button type="button" class="row-btn" id="resetLogoBtn">Revenir au logo par défaut</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="add-btn" id="addProductBtn">+ Ajouter un plat</button>
+    <div class="admin-list" id="adminList"></div>
+  </div>
+</div>
+
+<!-- MODAL FORMULAIRE PRODUIT -->
+<div class="modal-overlay" id="formOverlay">
+  <form class="form-box" id="productForm">
+    <h3 class="modal-title" id="formTitle">Ajouter un plat</h3>
+
+    <label class="form-label">Ce plat fait partie de…</label>
+    <div class="type-toggle" id="typeToggle">
+      <button type="button" class="type-toggle-btn active" data-type="Menu">🍽️ Menu</button>
+      <button type="button" class="type-toggle-btn" data-type="Menu du jour">☀️ Menu du jour</button>
+    </div>
+    <input type="hidden" id="fType" value="Menu">
+
+    <label class="form-label">Nom du plat</label>
+    <input type="text" class="modal-input" id="fTitre" placeholder="Ex : Poulet braisé sauce arachide" required>
+
+    <label class="form-label">Catégorie</label>
+    <select class="modal-select" id="fCat">
+      <option value="Entrées">Entrées</option>
+      <option value="Plats">Plats</option>
+      <option value="Boissons">Boissons</option>
+      <option value="Desserts">Desserts</option>
+    </select>
+
+    <label class="form-label">Description</label>
+    <textarea class="modal-textarea" id="fDesc" placeholder="Courte description du plat"></textarea>
+
+    <label class="form-label">Prix (ex : 3 500 FCFA)</label>
+    <input type="text" class="modal-input" id="fPrix" placeholder="Ex : 3 500 FCFA" required>
+
+    <label class="form-label">Badge (optionnel)</label>
+    <input type="text" class="modal-input" id="fBadge" placeholder="Ex : Nouveau, Spécialité, Populaire…">
+
+    <label class="form-label">Photo du plat</label>
+    <div class="upload-box">
+      <div class="upload-preview-wrap">
+        <img id="fPreview" class="upload-preview" src="" alt="Aperçu">
+        <button type="button" class="remove-photo-btn" id="removePhotoBtn" style="display:none;">✕</button>
+      </div>
+      <div style="flex:1;">
+        <label class="upload-btn" id="uploadLabel">
+          Importer une photo
+          <input type="file" id="fPhotoInput" accept="image/*">
+        </label>
+        <p class="form-hint" id="uploadHint">Aucune photo importée — une image de démonstration est utilisée en attendant.</p>
+        <div class="modal-error" id="uploadError" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="submit" class="btn-submit" id="formSubmitBtn">Ajouter</button>
+      <button type="button" class="btn-cancel" id="formCancelBtn">Annuler</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- LIGHTBOX ZOOM PHOTO -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Fermer">✕</button>
+  <button type="button" class="zoom-badge-btn" id="lightboxZoomBtn">🔍 <span id="lightboxZoomLabel">Zoomer</span></button>
+  <div class="lightbox-viewport" id="lightboxViewport">
+    <img class="lightbox-img" id="lightboxImg" src="" alt="Photo agrandie du plat">
+  </div>
+  <div class="lightbox-hint" id="lightboxHint">Cliquez sur la photo pour zoomer — molette ou pincement pour ajuster</div>
+</div>
+
+<script>
+/* =========================================================
+   DONNEES ET STOCKAGE
+   Sauvegardé en ligne (Firebase Firestore) : les modifications
+   sont visibles par tous les visiteurs, sur tous les appareils.
+========================================================= */
+const WHATSAPP = "22375557088";
+const STORAGE_PRODUCTS = "algass_menu_v1";
+const STORAGE_PASSWORD = "algass_admin_password_v1";
+const STORAGE_LOGO = "algass_logo_v1";
+const DEFAULT_LOGO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCAEsASwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7+ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACik/GqcuoJHrcOnllDSxs4B68VnUqwp253a+g0m9i7RSUtaCCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAaWCqSTgDkk15Zq/iORvHEeowEmK3bYo9VHX866rxpr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";
+const CATEGORIES = ["Entrées", "Plats", "Boissons", "Desserts"];
+const TYPES_MENU = ["Menu", "Menu du jour"];
+
+const PRODUITS_INITIAUX = [
+  { id: 1, type: "Menu", cat: "Entrées", titre: "Salade fraîcheur du chef", desc: "Mélange de légumes croquants, vinaigrette maison légère.", prix: "2 000 FCFA", img: "algass1", imgData: "", badge: "" },
+  { id: 2, type: "Menu", cat: "Entrées", titre: "Beignets de crevettes épicés", desc: "Beignets croustillants, sauce pimentée douce.", prix: "3 000 FCFA", img: "algass2", imgData: "", badge: "Populaire" },
+  { id: 3, type: "Menu du jour", cat: "Entrées", titre: "Soupe du jour", desc: "Soupe maison préparée chaque matin selon les saisons.", prix: "1 800 FCFA", img: "algass3", imgData: "", badge: "" },
+  { id: 4, type: "Menu", cat: "Entrées", titre: "Samoussas viande hachée", desc: "Samoussas croustillants garnis de viande épicée.", prix: "2 200 FCFA", img: "algass4", imgData: "", badge: "" },
+  { id: 5, type: "Menu", cat: "Plats", titre: "Poulet braisé sauce arachide", desc: "Poulet mariné, braisé, servi avec sauce arachide onctueuse.", prix: "4 500 FCFA", img: "algass5", imgData: "", badge: "Spécialité maison" },
+  { id: 6, type: "Menu", cat: "Plats", titre: "Riz gras à la viande", desc: "Riz parfumé cuit avec viande et légumes, recette traditionnelle.", prix: "3 800 FCFA", img: "algass6", imgData: "", badge: "" },
+  { id: 7, type: "Menu du jour", cat: "Plats", titre: "Poisson grillé sauce yassa", desc: "Poisson frais grillé, sauce yassa aux oignons confits.", prix: "5 000 FCFA", img: "algass7", imgData: "", badge: "Best-seller" },
+  { id: 8, type: "Menu", cat: "Plats", titre: "Brochettes de bœuf grillées", desc: "Brochettes marinées, grillées au feu de bois, servies avec frites.", prix: "4 200 FCFA", img: "algass8", imgData: "", badge: "" },
+  { id: 9, type: "Menu du jour", cat: "Plats", titre: "Tô sauce gombo", desc: "Plat traditionnel accompagné d'une sauce gombo bien relevée.", prix: "3 000 FCFA", img: "algass9", imgData: "", badge: "" },
+  { id: 10, type: "Menu", cat: "Plats", titre: "Attiéké poisson frit", desc: "Semoule de manioc accompagnée de poisson frit croustillant.", prix: "4 000 FCFA", img: "algass10", imgData: "", badge: "Nouveau" },
+  { id: 11, type: "Menu", cat: "Boissons", titre: "Jus de bissap frais", desc: "Boisson locale à base de fleurs d'hibiscus, légèrement sucrée.", prix: "1 000 FCFA", img: "algass11", imgData: "", badge: "" },
+  { id: 12, type: "Menu", cat: "Boissons", titre: "Jus de gingembre", desc: "Boisson rafraîchissante et épicée, préparée maison.", prix: "1 000 FCFA", img: "algass12", imgData: "", badge: "" },
+  { id: 13, type: "Menu", cat: "Boissons", titre: "Eau minérale", desc: "Bouteille d'eau minérale fraîche, 50cl.", prix: "500 FCFA", img: "algass13", imgData: "", badge: "" },
+  { id: 14, type: "Menu", cat: "Desserts", titre: "Salade de fruits de saison", desc: "Fruits frais coupés du jour, présentation soignée.", prix: "1 500 FCFA", img: "algass14", imgData: "", badge: "" },
+  { id: 15, type: "Menu", cat: "Desserts", titre: "Beignets sucrés maison", desc: "Beignets moelleux saupoudrés de sucre, recette de la maison.", prix: "1 200 FCFA", img: "algass15", imgData: "", badge: "Populaire" }
+];
+
+let produits = [];
+let activeCat = "Tout voir";
+let activeCatJour = "Tout voir";
+let isAdmin = false;
+let editingProductId = null; // null = pas d'édition, "new" = ajout, sinon id du produit
+let logoClicks = 0;
+let logoClickTimer = null;
+let currentUploadedPhoto = "";
+
+/* ---------- Stockage en ligne (Firestore) ---------- */
+// Collection "settings", documents : "menu" (produits), "password" (mot de passe admin), "logo" (logo du restaurant)
+async function loadProducts() {
+  try {
+    const doc = await db.collection('settings').doc('menu').get();
+    if (doc.exists && doc.data().produits) {
+      produits = doc.data().produits;
+    } else {
+      produits = PRODUITS_INITIAUX.slice();
+      await saveProducts(); // initialise la base avec le menu de départ
+    }
+  } catch (e) {
+    console.error("Erreur de chargement", e);
+    produits = PRODUITS_INITIAUX.slice();
+    showToast("⚠ Impossible de se connecter à la base en ligne. Vérifiez votre connexion.");
+  }
+}
+async function saveProducts() {
+  try {
+    await db.collection('settings').doc('menu').set({ produits: produits });
+    return true;
+  } catch (e) {
+    console.error("Erreur de sauvegarde", e);
+    return false;
+  }
+}
+async function getSavedPassword() {
+  try {
+    const doc = await db.collection('settings').doc('password').get();
+    return (doc.exists && doc.data().value) ? doc.data().value : "";
+  } catch (e) {
+    console.error("Erreur de lecture du mot de passe", e);
+    return "";
+  }
+}
+async function setSavedPassword(pw) {
+  try {
+    await db.collection('settings').doc('password').set({ value: pw });
+    return true;
+  } catch (e) {
+    console.error("Erreur de sauvegarde du mot de passe", e);
+    return false;
+  }
+}
+async function getSavedLogo() {
+  try {
+    const doc = await db.collection('settings').doc('logo').get();
+    return (doc.exists && doc.data().value) ? doc.data().value : "";
+  } catch (e) {
+    return "";
+  }
+}
+async function setSavedLogo(dataUrl) {
+  try {
+    if (dataUrl) {
+      await db.collection('settings').doc('logo').set({ value: dataUrl });
+    } else {
+      await db.collection('settings').doc('logo').delete();
+    }
+    return true;
+  } catch (e) {
+    console.error("Erreur de sauvegarde du logo", e);
+    return false;
+  }
+}
+async function applyLogo() {
+  const logoData = await getSavedLogo();
+  const img = document.getElementById('logoMarkImg');
+  const letter = document.getElementById('logoMarkLetter');
+  const finalSrc = logoData || DEFAULT_LOGO;
+  img.src = finalSrc;
+  img.style.display = 'block';
+  letter.style.display = 'none';
+}
+
+/* ---------- Utilitaires ---------- */
+function getImageSrc(p, size) {
+  size = size || 500;
+  if (p.imgData) return p.imgData;
+  return `https://picsum.photos/seed/${p.img}/${size}/${Math.round(size * 0.8)}`;
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function openOverlay(id) { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ---------- Rendu de la grille produits ---------- */
+function renderGridFor(type, gridId, filterCat) {
+  const grid = document.getElementById(gridId);
+  const baseList = produits.filter(p => (p.type || "Menu") === type);
+  const list = filterCat === "Tout voir" ? baseList : baseList.filter(p => p.cat === filterCat);
+
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty-msg">${type === "Menu du jour" ? "Aucun plat du jour disponible pour le moment." : "Aucun plat dans cette catégorie pour le moment."}</div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(p => `
+    <div class="card" data-id="${p.id}">
+      <div class="card-media">
+        ${p.badge ? `<span class="badge">${escapeHtml(p.badge)}</span>` : ''}
+        ${isAdmin ? `
+          <div class="card-admin-actions">
+            <button type="button" class="mini-btn edit-btn" data-id="${p.id}" title="Modifier">✎</button>
+            <button type="button" class="mini-btn danger delete-btn" data-id="${p.id}" title="Supprimer">🗑</button>
+          </div>` : ''}
+        <img src="${getImageSrc(p, 500)}" alt="${escapeHtml(p.titre)}" loading="lazy" class="zoomable-img" data-id="${p.id}">
+        <div class="zoom-hint-icon">🔍</div>
+      </div>
+      <div class="card-body">
+        <div class="card-cat">${escapeHtml(p.cat)}</div>
+        <div class="card-title">${escapeHtml(p.titre)}</div>
+        <div class="card-desc">${escapeHtml(p.desc)}</div>
+        <div class="card-footer">
+          <div class="card-price">${escapeHtml(p.prix)}<span>Prix menu</span></div>
+          <div class="card-link">Commander
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Clic sur une carte -> WhatsApp (sauf clic sur la photo ou sur les boutons admin)
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.card-admin-actions')) return;
+      if (e.target.closest('.zoomable-img')) return;
+      const id = Number(card.dataset.id);
+      const p = produits.find(x => x.id === id);
+      if (!p) return;
+      const msg = encodeURIComponent(`Bonjour, je souhaite commander : ${p.titre} (${p.prix}). Est-ce disponible ?`);
+      window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, '_blank');
+    });
+  });
+
+  // Clic sur la photo -> ouvre la visionneuse zoom
+  grid.querySelectorAll('.zoomable-img').forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = Number(img.dataset.id);
+      const p = produits.find(x => x.id === id);
+      if (!p) return;
+      openLightbox(getImageSrc(p, 1400), p.titre);
+    });
+  });
+
+  grid.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openProductForm(Number(btn.dataset.id));
+    });
+  });
+  grid.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteProduct(Number(btn.dataset.id));
+    });
+  });
+}
+
+function renderGrid() {
+  document.getElementById('statCount').textContent = produits.length;
+  renderGridFor("Menu du jour", "productGridJour", activeCatJour);
+  renderGridFor("Menu", "productGrid", activeCat);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+/* ---------- Filtres ---------- */
+document.getElementById('filters').addEventListener('click', (e) => {
+  const btn = e.target.closest('.filter-chip');
+  if (!btn) return;
+  document.querySelectorAll('#filters .filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  activeCat = btn.dataset.cat;
+  renderGrid();
+});
+
+document.getElementById('filtersJour').addEventListener('click', (e) => {
+  const btn = e.target.closest('.filter-chip');
+  if (!btn) return;
+  document.querySelectorAll('#filtersJour .filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  activeCatJour = btn.dataset.cat;
+  renderGrid();
+});
+
+/* =========================================================
+   ADMIN : connexion / création du mot de passe
+========================================================= */
+document.getElementById('logoBtn').addEventListener('click', () => {
+  logoClicks++;
+  clearTimeout(logoClickTimer);
+  logoClickTimer = setTimeout(() => { logoClicks = 0; }, 1500);
+  if (logoClicks >= 5) {
+    logoClicks = 0;
+    openLoginModal();
+  }
+});
+
+async function openLoginModal() {
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginTitle').textContent = "Connexion en cours…";
+  document.getElementById('loginSub').textContent = "Un instant, vérification en cours.";
+  document.getElementById('pwConfirm').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwConfirm').value = '';
+  openOverlay('loginOverlay');
+
+  const savedPw = await getSavedPassword();
+  const isFirstTime = savedPw === "";
+  document.getElementById('loginTitle').textContent = isFirstTime
+    ? "Créer le mot de passe administrateur"
+    : "Accès administrateur";
+  document.getElementById('loginSub').textContent = isFirstTime
+    ? "Première connexion : choisissez le mot de passe qui vous permettra de gérer le menu."
+    : "Entrez le mot de passe pour gérer le menu.";
+  document.getElementById('pwConfirm').style.display = isFirstTime ? 'block' : 'none';
+  document.getElementById('loginSubmitBtn').textContent = isFirstTime ? "Créer et se connecter" : "Se connecter";
+  setTimeout(() => document.getElementById('pwInput').focus(), 50);
+}
+
+document.getElementById('loginCancelBtn').addEventListener('click', () => closeOverlay('loginOverlay'));
+document.getElementById('loginOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'loginOverlay') closeOverlay('loginOverlay');
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  const pwInput = document.getElementById('pwInput').value;
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  const originalBtnText = submitBtn.textContent;
+
+  const savedPw = await getSavedPassword();
+  const isFirstTime = savedPw === "";
+
+  if (isFirstTime) {
+    const pwConfirm = document.getElementById('pwConfirm').value;
+    if (pwInput.length < 4) {
+      errEl.textContent = "Le mot de passe doit contenir au moins 4 caractères.";
+      errEl.style.display = 'block';
+      return;
+    }
+    if (pwInput !== pwConfirm) {
+      errEl.textContent = "Les deux mots de passe ne correspondent pas.";
+      errEl.style.display = 'block';
+      return;
+    }
+    submitBtn.textContent = "Création…";
+    submitBtn.disabled = true;
+    const ok = await setSavedPassword(pwInput);
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalBtnText;
+    if (!ok) {
+      errEl.textContent = "⚠ Impossible de créer le mot de passe. Vérifiez votre connexion internet.";
+      errEl.style.display = 'block';
+      return;
+    }
+    isAdmin = true;
+    closeOverlay('loginOverlay');
+    enterAdminMode();
+    showToast("Mot de passe administrateur créé");
+    openAdminPanel();
+  } else {
+    if (pwInput === savedPw) {
+      isAdmin = true;
+      closeOverlay('loginOverlay');
+      enterAdminMode();
+      openAdminPanel();
+    } else {
+      errEl.textContent = "Mot de passe incorrect.";
+      errEl.style.display = 'block';
+    }
+  }
+});
+
+function enterAdminMode() {
+  document.getElementById('ctaWhatsapp').style.display = 'none';
+  document.getElementById('headerAdminActions').classList.add('visible');
+  renderGrid();
+}
+function exitAdminMode() {
+  isAdmin = false;
+  document.getElementById('ctaWhatsapp').style.display = 'inline-flex';
+  document.getElementById('headerAdminActions').classList.remove('visible');
+  closeOverlay('adminOverlay');
+  renderGrid();
+}
+document.getElementById('logoutBtn').addEventListener('click', exitAdminMode);
+
+/* =========================================================
+   PANNEAU ADMIN (liste + actions)
+========================================================= */
+document.getElementById('manageBtn').addEventListener('click', openAdminPanel);
+document.getElementById('adminCloseBtn').addEventListener('click', () => closeOverlay('adminOverlay'));
+document.getElementById('adminOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'adminOverlay') closeOverlay('adminOverlay');
+});
+
+async function openAdminPanel() {
+  renderAdminList();
+  refreshLogoAdminPreview();
+  openOverlay('adminOverlay');
+}
+
+async function refreshLogoAdminPreview() {
+  const preview = document.getElementById('logoAdminPreview');
+  const logoData = await getSavedLogo();
+  preview.src = logoData || DEFAULT_LOGO;
+}
+
+document.getElementById('logoPhotoInput').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showToast("Merci de choisir un fichier image (JPG, PNG…).");
+    e.target.value = '';
+    return;
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    showToast("Cette image est trop lourde (max 12 Mo).");
+    e.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const image = new Image();
+    image.onload = async () => {
+      try {
+        // Le logo est carré et petit : on le recadre au centre en carré
+        const size = Math.min(image.width, image.height);
+        const sx = (image.width - size) / 2;
+        const sy = (image.height - size) / 2;
+        const targetSize = 300;
+        const canvas = document.createElement('canvas');
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, sx, sy, size, size, 0, 0, targetSize, targetSize);
+        const compressed = canvas.toDataURL('image/jpeg', 0.85);
+        showToast("Envoi en cours…");
+        const ok = await setSavedLogo(compressed);
+        if (ok) {
+          await applyLogo();
+          await refreshLogoAdminPreview();
+          showToast("Logo mis à jour");
+        } else {
+          showToast("⚠ Échec de la sauvegarde du logo. Vérifiez votre connexion.");
+        }
+      } catch (err) {
+        console.error("Erreur lors du traitement de l'image", err);
+        showToast("⚠ Impossible de traiter cette image, essayez-en une autre.");
+      }
+    };
+    image.onerror = () => showToast("Impossible de lire cette image.");
+    image.src = ev.target.result;
+  };
+  reader.onerror = () => showToast("Erreur lors de la lecture du fichier.");
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+document.getElementById('resetLogoBtn').addEventListener('click', async () => {
+  await setSavedLogo('');
+  await applyLogo();
+  await refreshLogoAdminPreview();
+  showToast("Logo par défaut restauré");
+});
+
+function renderAdminList() {
+  const list = document.getElementById('adminList');
+  if (produits.length === 0) {
+    list.innerHTML = '<div class="empty-msg">Aucun plat pour le moment.</div>';
+    return;
+  }
+  list.innerHTML = produits.map(p => `
+    <div class="admin-row">
+      <img class="admin-thumb" src="${getImageSrc(p, 120)}" alt="${escapeHtml(p.titre)}">
+      <div class="admin-row-info">
+        <div class="admin-row-title">${escapeHtml(p.titre)}${(p.type || "Menu") === "Menu du jour" ? '<span class="type-pill">☀️ Jour</span>' : ''}</div>
+        <div class="admin-row-meta">${escapeHtml(p.cat)} · ${escapeHtml(p.prix)}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="row-btn admin-edit-btn" data-id="${p.id}">Modifier</button>
+        <button type="button" class="row-btn danger admin-delete-btn" data-id="${p.id}">Supprimer</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.admin-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openProductForm(Number(btn.dataset.id)));
+  });
+  list.querySelectorAll('.admin-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteProduct(Number(btn.dataset.id)));
+  });
+}
+
+document.getElementById('addProductBtn').addEventListener('click', () => openProductForm('new'));
+
+async function deleteProduct(id) {
+  if (!confirm("Supprimer ce plat définitivement ?")) return;
+  produits = produits.filter(p => p.id !== id);
+  const ok = await saveProducts();
+  showToast(ok ? "Plat supprimé" : "⚠ Échec de la sauvegarde. Vérifiez votre connexion.");
+  renderGrid();
+  renderAdminList();
+}
+
+/* =========================================================
+   FORMULAIRE PRODUIT (ajout / modification / upload photo)
+========================================================= */
+function openProductForm(idOrNew) {
+  editingProductId = idOrNew;
+  const isEdit = idOrNew !== 'new';
+  const p = isEdit ? produits.find(x => x.id === idOrNew) : null;
+
+  document.getElementById('formTitle').textContent = isEdit ? "Modifier le plat" : "Ajouter un plat";
+  document.getElementById('formSubmitBtn').textContent = isEdit ? "Enregistrer" : "Ajouter";
+  document.getElementById('fTitre').value = p ? p.titre : '';
+  document.getElementById('fCat').value = p ? p.cat : CATEGORIES[0];
+  document.getElementById('fDesc').value = p ? p.desc : '';
+  document.getElementById('fPrix').value = p ? p.prix : '';
+  document.getElementById('fBadge').value = p ? p.badge : '';
+  setTypeToggle(p ? (p.type || "Menu") : "Menu");
+  currentUploadedPhoto = p ? (p.imgData || '') : '';
+  document.getElementById('fPhotoInput').value = '';
+  document.getElementById('uploadError').style.display = 'none';
+  updatePhotoPreview(p);
+
+  openOverlay('formOverlay');
+}
+
+function setTypeToggle(type) {
+  document.getElementById('fType').value = type;
+  document.querySelectorAll('#typeToggle .type-toggle-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+}
+
+document.getElementById('typeToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('.type-toggle-btn');
+  if (!btn) return;
+  setTypeToggle(btn.dataset.type);
+});
+
+function updatePhotoPreview(p) {
+  const previewImg = document.getElementById('fPreview');
+  const removeBtn = document.getElementById('removePhotoBtn');
+  const hint = document.getElementById('uploadHint');
+  const fakeProduct = { imgData: currentUploadedPhoto, img: (p && p.img) || ('plat' + Date.now()) };
+  previewImg.src = getImageSrc(fakeProduct, 300);
+  if (currentUploadedPhoto) {
+    removeBtn.style.display = 'flex';
+    hint.textContent = "Photo importée depuis votre appareil.";
+  } else {
+    removeBtn.style.display = 'none';
+    hint.textContent = "Aucune photo importée — une image de démonstration est utilisée en attendant.";
+  }
+}
+
+document.getElementById('fPhotoInput').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const errEl = document.getElementById('uploadError');
+  errEl.style.display = 'none';
+
+  if (!file.type.startsWith('image/')) {
+    errEl.textContent = "Merci de choisir un fichier image (JPG, PNG…).";
+    errEl.style.display = 'block';
+    return;
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    errEl.textContent = "Cette image est trop lourde (max 12 Mo).";
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const image = new Image();
+    image.onload = () => {
+      const maxDim = 900;
+      let width = image.width, height = image.height;
+      if (width > height && width > maxDim) {
+        height = Math.round((height * maxDim) / width);
+        width = maxDim;
+      } else if (height > maxDim) {
+        width = Math.round((width * maxDim) / height);
+        height = maxDim;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0, width, height);
+      currentUploadedPhoto = canvas.toDataURL('image/jpeg', 0.82);
+      updatePhotoPreview(null);
+    };
+    image.onerror = () => {
+      errEl.textContent = "Impossible de lire cette image.";
+      errEl.style.display = 'block';
+    };
+    image.src = ev.target.result;
+  };
+  reader.onerror = () => {
+    errEl.textContent = "Erreur lors de la lecture du fichier.";
+    errEl.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('removePhotoBtn').addEventListener('click', () => {
+  currentUploadedPhoto = '';
+  updatePhotoPreview(null);
+});
+
+document.getElementById('formCancelBtn').addEventListener('click', () => {
+  closeOverlay('formOverlay');
+  editingProductId = null;
+});
+document.getElementById('formOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'formOverlay') {
+    closeOverlay('formOverlay');
+    editingProductId = null;
+  }
+});
+
+document.getElementById('productForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const titre = document.getElementById('fTitre').value.trim();
+  const prix = document.getElementById('fPrix').value.trim();
+  if (!titre || !prix) return;
+
+  const data = {
+    type: document.getElementById('fType').value,
+    cat: document.getElementById('fCat').value,
+    titre,
+    desc: document.getElementById('fDesc').value.trim(),
+    prix,
+    badge: document.getElementById('fBadge').value.trim(),
+    imgData: currentUploadedPhoto
+  };
+
+  if (editingProductId === 'new') {
+    const newId = produits.length ? Math.max(...produits.map(p => p.id)) + 1 : 1;
+    data.id = newId;
+    data.img = 'plat' + newId + '_' + Date.now();
+    produits.push(data);
+  } else {
+    const idx = produits.findIndex(p => p.id === editingProductId);
+    if (idx !== -1) {
+      produits[idx] = { ...produits[idx], ...data };
+    }
+  }
+
+  const submitBtn = document.getElementById('formSubmitBtn');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = "Enregistrement…";
+  submitBtn.disabled = true;
+
+  const ok = await saveProducts();
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = originalText;
+  showToast(ok ? (editingProductId === 'new' ? "Plat ajouté" : "Plat modifié") : "⚠ Échec de la sauvegarde. Vérifiez votre connexion.");
+  closeOverlay('formOverlay');
+  editingProductId = null;
+  renderGrid();
+  renderAdminList();
+});
+
+/* =========================================================
+   LIGHTBOX : zoom photo plein écran
+========================================================= */
+const lbOverlay = document.getElementById('lightboxOverlay');
+const lbViewport = document.getElementById('lightboxViewport');
+const lbImg = document.getElementById('lightboxImg');
+const lbZoomBtn = document.getElementById('lightboxZoomBtn');
+const lbZoomLabel = document.getElementById('lightboxZoomLabel');
+const lbHint = document.getElementById('lightboxHint');
+
+let lbScale = 1;
+let lbPanX = 0, lbPanY = 0;
+let lbDragging = false;
+let lbDragStartX = 0, lbDragStartY = 0;
+let lbPanStartX = 0, lbPanStartY = 0;
+const LB_ZOOM_LEVEL = 2.4;
+
+function openLightbox(src, alt) {
+  lbImg.src = src;
+  lbImg.alt = "Photo agrandie : " + (alt || '');
+  resetLightboxZoom();
+  openOverlayEl(lbOverlay);
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  closeOverlayEl(lbOverlay);
+  document.body.style.overflow = '';
+  resetLightboxZoom();
+}
+function openOverlayEl(el) { el.classList.add('open'); }
+function closeOverlayEl(el) { el.classList.remove('open'); }
+
+function resetLightboxZoom() {
+  lbScale = 1;
+  lbPanX = 0;
+  lbPanY = 0;
+  applyLightboxTransform();
+  lbViewport.classList.remove('zoomed');
+  lbZoomLabel.textContent = 'Zoomer';
+  lbHint.textContent = 'Cliquez sur la photo pour zoomer — molette ou pincement pour ajuster';
+}
+
+function applyLightboxTransform() {
+  lbImg.style.transform = `translate(${lbPanX}px, ${lbPanY}px) scale(${lbScale})`;
+}
+
+function setZoom(newScale) {
+  newScale = Math.min(Math.max(newScale, 1), 5);
+  if (newScale === 1) {
+    lbPanX = 0;
+    lbPanY = 0;
+  }
+  lbScale = newScale;
+  applyLightboxTransform();
+  const zoomed = lbScale > 1.01;
+  lbViewport.classList.toggle('zoomed', zoomed);
+  lbZoomLabel.textContent = zoomed ? 'Réduire' : 'Zoomer';
+  lbHint.textContent = zoomed ? 'Glissez pour déplacer — cliquez pour réduire' : 'Cliquez sur la photo pour zoomer — molette ou pincement pour ajuster';
+}
+
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+lbOverlay.addEventListener('click', (e) => {
+  if (e.target === lbOverlay) closeLightbox();
+});
+
+// Clic simple sur la photo : bascule zoom avant / arrière
+lbViewport.addEventListener('click', (e) => {
+  if (lbDragging) return;
+  if (lbScale > 1.01) {
+    setZoom(1);
+  } else {
+    setZoom(LB_ZOOM_LEVEL);
+  }
+});
+
+lbZoomBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (lbScale > 1.01) setZoom(1); else setZoom(LB_ZOOM_LEVEL);
+});
+
+// Molette de souris (desktop) pour zoomer progressivement
+lbViewport.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.25 : -0.25;
+  setZoom(lbScale + delta);
+}, { passive: false });
+
+// Glisser pour déplacer l'image quand elle est zoomée (souris)
+lbViewport.addEventListener('mousedown', (e) => {
+  if (lbScale <= 1.01) return;
+  lbDragging = true;
+  lbViewport.classList.add('dragging');
+  lbDragStartX = e.clientX;
+  lbDragStartY = e.clientY;
+  lbPanStartX = lbPanX;
+  lbPanStartY = lbPanY;
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!lbDragging) return;
+  lbPanX = lbPanStartX + (e.clientX - lbDragStartX);
+  lbPanY = lbPanStartY + (e.clientY - lbDragStartY);
+  applyLightboxTransform();
+});
+window.addEventListener('mouseup', () => {
+  if (lbDragging) {
+    lbDragging = false;
+    lbViewport.classList.remove('dragging');
+  }
+});
+
+// Support tactile : pincement pour zoomer, glisser pour déplacer
+let lbTouchStartDist = 0;
+let lbTouchStartScale = 1;
+let lbTouchLastX = 0, lbTouchLastY = 0;
+let lbTouchMode = null; // 'pinch' | 'pan'
+
+function touchDist(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+lbViewport.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) {
+    lbTouchMode = 'pinch';
+    lbTouchStartDist = touchDist(e.touches);
+    lbTouchStartScale = lbScale;
+  } else if (e.touches.length === 1 && lbScale > 1.01) {
+    lbTouchMode = 'pan';
+    lbTouchLastX = e.touches[0].clientX;
+    lbTouchLastY = e.touches[0].clientY;
+  }
+}, { passive: true });
+
+lbViewport.addEventListener('touchmove', (e) => {
+  if (lbTouchMode === 'pinch' && e.touches.length === 2) {
+    e.preventDefault();
+    const newDist = touchDist(e.touches);
+    const ratio = newDist / lbTouchStartDist;
+    setZoom(lbTouchStartScale * ratio);
+  } else if (lbTouchMode === 'pan' && e.touches.length === 1) {
+    e.preventDefault();
+    const dx = e.touches[0].clientX - lbTouchLastX;
+    const dy = e.touches[0].clientY - lbTouchLastY;
+    lbPanX += dx;
+    lbPanY += dy;
+    lbTouchLastX = e.touches[0].clientX;
+    lbTouchLastY = e.touches[0].clientY;
+    applyLightboxTransform();
+  }
+}, { passive: false });
+
+lbViewport.addEventListener('touchend', (e) => {
+  if (e.touches.length === 0) lbTouchMode = null;
+});
+
+// Fermer avec la touche Echap
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lbOverlay.classList.contains('open')) closeLightbox();
+});
+
+/* =========================================================
+   MENU MOBILE (bouton à trois traits)
+========================================================= */
+const burgerBtn = document.getElementById('burgerBtn');
+const mobileNav = document.getElementById('mobileNav');
+
+function toggleMobileNav() {
+  const isOpen = mobileNav.classList.toggle('open');
+  burgerBtn.textContent = isOpen ? '✕' : '☰';
+  burgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+function closeMobileNav() {
+  mobileNav.classList.remove('open');
+  burgerBtn.textContent = '☰';
+  burgerBtn.setAttribute('aria-expanded', 'false');
+}
+
+burgerBtn.addEventListener('click', toggleMobileNav);
+mobileNav.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', closeMobileNav);
+});
+
+/* =========================================================
+   INITIALISATION
+========================================================= */
+async function initSite() {
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '<div class="empty-msg">Chargement du menu…</div>';
+  await loadProducts();
+  renderGrid();
+  await applyLogo();
+}
+initSite();
+</script>
+
+</body>
+</html>
